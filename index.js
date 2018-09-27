@@ -17,21 +17,19 @@ var server = http.createServer(function (req, res) {
     var trimmedPath = path.replace(/^\/+|\/+$/g, '');
 
     //  Get the query string as an object
-
-    var queryStringObject = parsedUrl.query;
-
-
+    var queryStringObject = parsedUrl.query; 
 
     // Get the HTTP Method
-
     var method = req.method.toLowerCase();
+
+    // Get the headers as an object
+    var headers = req.headers; 
 
     // send the response 
     res.end('Hello World\n');
 
     // log the request path
-    console.log('Request reveived on path: ' + trimmedPath + ' with method : ' + method + ' and with these query string parameters', queryStringObject );
-
+    console.log('Request reveived with these headers', headers);
 });
 // Start the server, and have it  listen on port 3000
 
