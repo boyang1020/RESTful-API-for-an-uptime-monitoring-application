@@ -33,16 +33,40 @@ var server = http.createServer(function (req, res) {
         buffer += decoder.write(data)
     });
     req.on('end', function(){
-        buffer += decoder.end();
+        buffer += decoder.end(); 
+        // Choose the handler this request should go to. If one is not 
+        // found, use the not found handler
 
-        // send the response 
-        res.end('Hello World\n');
+        var chosenHandler = typeof(router[trimmedPath]) !== 'undefined' ? router[trimmedPath]: handlers.notFound;
 
-        // log the request path
-        console.log('Request reveived with this payload :', buffer);
-    })
+        // Construct the data object to send to the handler
+        var data = {
+            'trimmedPath' : trimmedPath,
+            'queryStringObject' : queryStringObject,
+            'method' : method,
+            'headers' : headers,
+            'payload' : buffer
+        };
 
+        // Route the request to the handler specified in the router
+        chosenHandler(data, function(statusCode, payload){
+            // Use the statusCode called back by handler, or default to 200
+            statusCode = typeof(statusCode) == 'number' ? statusCode : 200;
 
+            // Use the payload called back by handler, or defualt to an empty object
+            payload = typeof(payload) == 'object' ? payload : {};
+
+            // Convert the payload to a string
+            var payloadString = JSON.stringify(payload);
+
+            // Return the response
+            res.writeHead(statusCode);
+            res.end(payloadString);
+            // log the request path
+        console.log('Returning this response :', statusCode, payloadString);
+
+        }); 
+    });
 });
 // Start the server, and have it  listen on port 3000
 
@@ -56,11 +80,13 @@ var handlers = {};
 // Sample handler
 handlers.sample = function(data, callback){
 // Callback a http status code, and a payload object
+callback(406, {'name' : 'sample handler'});
+
 };
 
 // Not found handler
 handlers.notFound = function(data, callback) {
-
+ callback(404);
 };
 
 // Define a request router
